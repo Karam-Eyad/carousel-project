@@ -1378,6 +1378,7 @@ function renderCarouselSlides() {
   const slides = state.carouselSlides;
   const total = slides.length;
   const tpl = state.activeTemplate || 'bold';
+  const isAr = currentLang === 'ar';
 
   if (!total) {
     container.innerHTML = `<div class="empty-state"><p>${t('generateError')}</p></div>`;
@@ -1388,8 +1389,8 @@ function renderCarouselSlides() {
     return `
       <div class="slide-wrapper fade-up" style="animation-delay:${i * 0.06}s">
         <div class="slide-num-badge">${i+1}</div>
-        <div class="slide-canvas" id="slideCanvas${i}">
-          ${renderSlideByTemplate(slide, i, total, tpl)}
+        <div class="slide-canvas" id="slideCanvas${i}" ${isAr ? 'dir="rtl"' : ''}>
+          ${renderSlideByTemplate(slide, i, total, tpl, isAr)}
         </div>
         <div class="slide-actions">
           <button class="btn-ghost" onclick="downloadSlide(${i})">${t('downloadSlide')}</button>
@@ -1530,7 +1531,7 @@ const TEMPLATES = [
   { id: 'pro',   name: 'Pro',   nameAr: 'احترافي' }
 ];
 
-function renderSlideByTemplate(slide, i, total, tpl) {
+function renderSlideByTemplate(slide, i, total, tpl, isAr) {
   const n = String(i + 1).padStart(2, '0');
   const isCover = slide.type === 'cover';
   const isCta = slide.slideType === 'cta';
@@ -1538,6 +1539,11 @@ function renderSlideByTemplate(slide, i, total, tpl) {
   const title = escapeHtml(slide.title || '');
   const body = escapeHtml(slide.subtitle || slide.body || '');
   const counter = `${i+1}/${total}`;
+  const arrow = isAr ? '←' : '→';
+  const swipeText = isAr ? `اسحب ${arrow}` : `swipe ${arrow}`;
+  const thankYou = isAr ? 'شكراً' : 'Thank You';
+  const brandName = 'Carousel';
+  const arrowUp = isAr ? '↑' : '↺';
 
   if (tpl === 'bold') {
     if (isCover) return `<div class="slide-bold">
@@ -1547,7 +1553,7 @@ function renderSlideByTemplate(slide, i, total, tpl) {
         <div class="slide-bold-accent"></div>
         <div class="slide-bold-title">${title}</div>
       </div>
-      <div class="slide-bold-footer"><span class="slide-bold-arrow">→</span><span class="slide-bold-counter">swipe →</span></div>
+      <div class="slide-bold-footer"><span class="slide-bold-arrow">${arrow}</span><span class="slide-bold-counter">${swipeText}</span></div>
     </div>`;
     if (isCta) return `<div class="slide-bold">
       <div class="slide-bold-topbar"><span class="slide-bold-brand">Carousel</span><span class="slide-bold-counter">${counter}</span></div>
@@ -1566,7 +1572,7 @@ function renderSlideByTemplate(slide, i, total, tpl) {
         <div class="slide-bold-title">${title}</div>
         <div class="slide-bold-body">${body}</div>
       </div>
-      <div class="slide-bold-footer"><span class="slide-bold-arrow">→</span></div>
+      <div class="slide-bold-footer"><span class="slide-bold-arrow">${arrow}</span></div>
     </div>`;
   }
 
@@ -1578,7 +1584,7 @@ function renderSlideByTemplate(slide, i, total, tpl) {
         <div class="slide-mono-num">${n} / ${String(total).padStart(2,'0')}</div>
         <div class="slide-mono-title">${title}</div>
       </div>
-      <div class="slide-mono-footer"><span class="slide-mono-swipe">swipe →</span><div class="slide-mono-circle">↺</div></div>
+      <div class="slide-mono-footer"><span class="slide-mono-swipe">${swipeText}</span><div class="slide-mono-circle">${arrowUp}</div></div>
     </div>`;
     if (isTip) return `<div class="slide-mono">
       <div class="slide-mono-bignumber">${n}</div>
@@ -1597,7 +1603,7 @@ function renderSlideByTemplate(slide, i, total, tpl) {
         <div class="slide-mono-title">${title}</div>
         <div class="slide-mono-cta-box"><div class="slide-mono-body">${body}</div></div>
       </div>
-      <div class="slide-mono-footer"><span class="slide-mono-swipe">Thank You</span><div class="slide-mono-circle">↑</div></div>
+      <div class="slide-mono-footer"><span class="slide-mono-swipe">${thankYou}</span><div class="slide-mono-circle">↑</div></div>
     </div>`;
     return `<div class="slide-mono">
       <div class="slide-mono-bignumber">${n}</div>
@@ -1619,7 +1625,7 @@ function renderSlideByTemplate(slide, i, total, tpl) {
         <div class="slide-light-num">${n} / ${String(total).padStart(2,'0')}</div>
         <div class="slide-light-title">${title}</div>
       </div>
-      <div class="slide-light-footer"><span class="slide-light-brand">Carousel</span><span class="slide-light-counter">swipe →</span></div>
+      <div class="slide-light-footer"><span class="slide-light-brand">Carousel</span><span class="slide-light-counter">${swipeText}</span></div>
     </div>`;
     if (isCta) return `<div class="slide-light">
       <div class="slide-light-sphere"></div>
@@ -1652,7 +1658,7 @@ function renderSlideByTemplate(slide, i, total, tpl) {
       <div class="slide-pro-center">
         <div class="slide-pro-title">${title}</div>
       </div>
-      <div class="slide-pro-footer"><div class="slide-pro-dot"></div><span class="slide-pro-counter">swipe →</span></div>
+      <div class="slide-pro-footer"><div class="slide-pro-dot"></div><span class="slide-pro-counter">${swipeText}</span></div>
     </div>
   </div>`;
   if (isCta) return `<div class="slide-pro">
@@ -1695,7 +1701,7 @@ function showTemplatePicker() {
   const innerPx = 420;
 
   grid.innerHTML = TEMPLATES.map(tpl => {
-    const preview = renderSlideByTemplate(coverSlide, 0, total, tpl.id);
+    const preview = renderSlideByTemplate(coverSlide, 0, total, tpl.id, isAr);
     return `<div class="tpl-card${state.activeTemplate === tpl.id ? ' tpl-selected' : ''}" data-tpl="${tpl.id}">
       <div class="tpl-preview" style="height:${cardWidth}px">
         <div class="tpl-preview-inner" style="width:${innerPx}px;height:${innerPx}px;transform:scale(${scale})">
