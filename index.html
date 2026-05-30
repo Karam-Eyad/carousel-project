@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;700&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 :root {
   --bg: #051824;
@@ -1400,41 +1401,72 @@ function renderCarouselSlides() {
   }).join('');
 }
 
-function downloadSlide(index) {
-  const canvas = document.getElementById(`slideCanvas${index}`);
-  if (!canvas) { toast(t('saved')); return; }
-  const prefix = (state.carouselTopic || 'slide').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'slide';
-  html2canvas(canvas, {
-    scale: 2, backgroundColor: null, useCORS: true, logging: false
-  }).then(c => {
-    const link = document.createElement('a');
-    link.download = `${prefix}-slide-${String(index+1).padStart(2,'0')}.png`;
-    link.href = c.toDataURL('image/png');
-    link.click();
-    toast(t('saved'));
+function triggerDownload(canvas, filename) {
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = canvas.toDataURL('image/png');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+async function renderCanvas(el) {
+  return html2canvas(el, {
+    scale: 2, backgroundColor: '#051824', useCORS: true, logging: false
   });
 }
 
-document.getElementById('carouselDownloadAll').addEventListener('click', () => {
+async function downloadSlide(index) {
+  const el = document.getElementById(`slideCanvas${index}`);
+  if (!el) { toast(t('generateError')); return; }
+  try {
+    const canvas = await renderCanvas(el);
+    const prefix = (state.carouselTopic || 'slide').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'slide';
+    triggerDownload(canvas, `${prefix}-slide-${String(index+1).padStart(2,'0')}.png`);
+    toast(t('saved'));
+  } catch (err) {
+    console.error('Download error:', err);
+    toast(t('generateError'));
+  }
+}
+
+document.getElementById('carouselDownloadAll').addEventListener('click', async () => {
   const total = state.carouselSlides.length;
   if (!total) return;
-  let i = 0;
-  const next = () => {
-    if (i >= total) { toast(t('saved')); return; }
-    const canvas = document.getElementById(`slideCanvas${i}`);
-    if (canvas) {
-      html2canvas(canvas, { scale: 2, backgroundColor: null, useCORS: true, logging: false }).then(c => {
-        const prefix = (state.carouselTopic || 'slide').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'slide';
-        const link = document.createElement('a');
-        link.download = `${prefix}-slide-${String(i+1).padStart(2,'0')}.png`;
-        link.href = c.toDataURL('image/png');
-        link.click();
-        i++;
-        setTimeout(next, 400);
-      });
-    } else { i++; setTimeout(next, 100); }
-  };
-  next();
+
+  const btn = document.getElementById('carouselDownloadAll');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '...';
+
+  try {
+    const zip = new JSZip();
+    const prefix = (state.carouselTopic || 'slide').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'slide';
+
+    for (let i = 0; i < total; i++) {
+      const el = document.getElementById(`slideCanvas${i}`);
+      if (!el) continue;
+      const canvas = await renderCanvas(el);
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      zip.file(`${prefix}-slide-${String(i+1).padStart(2,'0')}.png`, blob);
+    }
+
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(zipBlob);
+    link.download = `${prefix}-carousel.zip`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+    toast(t('saved'));
+  } catch (err) {
+    console.error('Download all error:', err);
+    toast(t('generateError'));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
 });
 
 // ── Lang toggle ──
