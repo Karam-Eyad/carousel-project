@@ -1,0 +1,1807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="pageTitle">Topic → Carousel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;700&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root {
+  --bg: #051824;
+  --surface: #162936;
+  --surface2: #1E3347;
+  --border: #2A4055;
+  --border2: #1F3447;
+  --text: #D9E2EC;
+  --muted: #8DA0B3;
+  --muted2: #5A7388;
+  --primary: #27E9B5;
+  --on-primary: #051824;
+  --r-xs: 4px; --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 24px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased
+}
+[dir="rtl"] body{font-family:'Tajawal',sans-serif}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.bg-layer{
+  position:fixed;inset:0;z-index:0;
+  pointer-events:none;overflow:hidden
+}
+.bg-layer::before{
+  content:'';position:absolute;
+  top:-120px;left:50%;transform:translateX(-50%);
+  width:700px;height:420px;
+  background:radial-gradient(ellipse at center,rgba(39,233,181,0.07) 0%,transparent 68%)
+}
+.bg-icon{
+  position:absolute;z-index:0;
+  pointer-events:none;
+  user-select:none;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;
+  will-change:transform;
+  line-height:0
+}
+.bg-icon svg{display:block;animation:iconSpin 20s linear infinite}
+@keyframes iconFadeIn{to{opacity:1}}
+@keyframes iconFloat{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-12px)}
+}
+@keyframes iconSpin{to{transform:rotate(360deg)}}
+.app{
+  max-width:780px;
+  margin:0 auto;
+  padding:0 20px 100px;
+  position:relative;z-index:1;
+  display:flex;flex-direction:column;
+  min-height:100vh
+}
+.header{padding:40px 0 20px}
+.header-top{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:16px
+}
+.header-top h1{
+  font-size:clamp(1.5rem,4vw,2.2rem);
+  font-weight:300;line-height:1.25;
+  letter-spacing:.3px
+}
+.header-top h1 em{font-style:normal;color:var(--primary);font-weight:500}
+.lang-btn{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:50px;
+  padding:5px 14px;
+  font-size:.7rem;font-weight:500;
+  font-family:inherit;
+  color:var(--muted);
+  cursor:pointer;flex-shrink:0;
+  transition:all .2s;
+  letter-spacing:.5px
+}
+.lang-btn:hover{border-color:var(--primary);color:var(--text)}
+.lang-btn.lang-active{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.header-sub{
+  font-size:.85rem;color:var(--muted);
+  line-height:1.7;font-weight:300;
+  margin-top:6px
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fadeUp .5s cubic-bezier(.4,0,.2,1) both}
+.fade-in{animation:fadeIn .35s ease both}
+.section{display:none}
+.section.active{display:block;animation:fadeIn .3s ease}
+
+/* Input */
+.topic-section{padding:0 0 24px}
+.topic-input-wrap{display:flex;gap:8px;max-width:520px}
+.topic-input{
+  flex:1;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  padding:12px 18px;
+  font-size:.9rem;font-weight:300;
+  font-family:inherit;
+  color:var(--text);
+  outline:none;
+  transition:border-color .2s
+}
+.topic-input:focus{border-color:var(--primary)}
+.topic-input::placeholder{color:var(--muted2)}
+.btn-primary{
+  background:var(--primary);
+  color:var(--on-primary);
+  border:none;
+  border-radius:var(--r-md);
+  padding:10px 22px;
+  font-size:.85rem;font-weight:500;
+  font-family:inherit;
+  cursor:pointer;
+  transition:opacity .2s,transform .15s;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  white-space:nowrap
+}
+.btn-primary:hover{opacity:.85;transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.3;cursor:not-allowed;transform:none}
+.btn-ghost{
+  background:transparent;
+  color:var(--muted);
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  padding:8px 18px;
+  font-size:.8rem;font-weight:300;
+  font-family:inherit;
+  cursor:pointer;
+  transition:border-color .2s,color .2s;
+  display:inline-flex;align-items:center;gap:6px
+}
+.btn-ghost:hover{border-color:var(--primary);color:var(--text)}
+
+/* Categories */
+.categories{
+  display:flex;gap:4px;overflow-x:auto;
+  padding:0 0 14px;
+  scrollbar-width:none;
+  -ms-overflow-style:none
+}
+.categories::-webkit-scrollbar{display:none}
+.cat-btn{
+  flex-shrink:0;padding:6px 16px;
+  border-radius:50px;
+  border:1px solid var(--border);
+  background:transparent;
+  font-size:.75rem;font-weight:400;
+  font-family:inherit;
+  color:var(--muted2);
+  cursor:pointer;
+  transition:all .2s ease;
+  white-space:nowrap
+}
+.cat-btn:hover{border-color:var(--muted);color:var(--text)}
+.cat-btn.active{
+  background:var(--primary);
+  color:var(--on-primary);
+  border-color:var(--primary)
+}
+
+/* Feed Grid */
+.feed-section{border-top:1px solid var(--border2);padding-top:20px}
+.feed-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px
+}
+.feed-header h3{font-size:.9rem;font-weight:500;color:var(--text)}
+.feed-header .feed-refresh{
+  background:none;border:none;
+  color:var(--muted2);font-size:.72rem;
+  font-family:inherit;cursor:pointer;
+  display:inline-flex;align-items:center;gap:4px;
+  transition:color .2s
+}
+.feed-header .feed-refresh:hover{color:var(--primary)}
+.feed-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.feed-card{
+  display:flex;flex-direction:column;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  overflow:hidden;
+  cursor:pointer;
+  transition:border-color .2s,transform .15s
+}
+.feed-card:hover{border-color:var(--muted);transform:translateY(-2px)}
+.feed-card-img{
+  width:100%;aspect-ratio:16/10;
+  object-fit:cover;background:var(--surface2);display:block
+}
+.feed-card-img-placeholder{
+  width:100%;aspect-ratio:16/10;
+  background:var(--surface2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:2rem;color:var(--muted2)
+}
+.feed-card-body{
+  padding:12px 14px 14px;
+  flex:1;display:flex;flex-direction:column
+}
+.feed-card-meta{
+  display:flex;align-items:center;gap:6px;
+  margin-bottom:6px;flex-wrap:wrap
+}
+.feed-card-source{
+  font-size:.62rem;color:var(--muted2);
+  text-transform:uppercase;letter-spacing:.5px;font-weight:500
+}
+.feed-card-subtopic{
+  font-size:.6rem;padding:2px 7px;
+  border-radius:50px;
+  background:rgba(39,233,181,0.1);
+  color:var(--primary);font-weight:400
+}
+.feed-card-title{
+  font-size:.82rem;font-weight:500;line-height:1.35;
+  color:var(--text);margin-bottom:4px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden
+}
+.feed-card-brief{
+  font-size:.72rem;color:var(--muted);
+  line-height:1.5;font-weight:300;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  margin-top:auto
+}
+.feed-card-date{font-size:.62rem;color:var(--muted2);font-weight:300}
+.feed-status{grid-column:1/-1;text-align:center;padding:40px 0;font-size:.8rem;color:var(--muted2);font-weight:300}
+
+/* Subtopic Tabs */
+.subtopic-section{margin-top:4px;margin-bottom:16px}
+.subtopic-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:12px;flex-wrap:wrap;gap:8px
+}
+.subtopic-header h3{font-size:.9rem;font-weight:500;color:var(--text)}
+.subtopic-tabs{
+  display:flex;gap:4px;overflow-x:auto;
+  padding:0 0 14px;
+  scrollbar-width:none;
+  -ms-overflow-style:none
+}
+.subtopic-tabs::-webkit-scrollbar{display:none}
+.subtopic-btn{
+  flex-shrink:0;padding:5px 14px;
+  border-radius:50px;
+  border:1px solid var(--border);
+  background:transparent;
+  font-size:.72rem;font-weight:400;
+  font-family:inherit;
+  color:var(--muted2);
+  cursor:pointer;
+  transition:all .2s ease;
+  white-space:nowrap
+}
+.subtopic-btn:hover{border-color:var(--muted);color:var(--text)}
+.subtopic-btn.active{
+  background:var(--primary);
+  color:var(--on-primary);
+  border-color:var(--primary)
+}
+
+/* Explore top */
+.explore-top{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:16px;flex-wrap:wrap
+}
+.explore-top .back-btn{
+  background:none;border:none;
+  color:var(--muted);font-size:.82rem;
+  font-family:inherit;cursor:pointer;
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 0;transition:color .2s
+}
+.explore-top .back-btn:hover{color:var(--primary)}
+.explore-topic-label{
+  font-size:.75rem;color:var(--muted2);font-weight:300;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:50px;padding:3px 12px
+}
+
+/* Detail */
+.detail-view{display:none}
+.detail-view.active{display:block;animation:fadeIn .35s ease}
+.detail-back{
+  background:none;border:none;
+  color:var(--muted);font-size:.82rem;
+  font-family:inherit;cursor:pointer;
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 0;margin-bottom:16px;
+  transition:color .2s
+}
+.detail-back:hover{color:var(--primary)}
+.detail-header{margin-bottom:20px}
+.detail-header h2{font-size:1.15rem;font-weight:600;line-height:1.35;margin-bottom:8px}
+.detail-meta{font-size:.75rem;color:var(--muted2);font-weight:300;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.detail-meta .source{color:var(--primary);font-weight:400}
+.detail-summary-box{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);padding:18px 20px;
+  margin-bottom:14px
+}
+.detail-summary-label{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:.68rem;color:var(--muted2);
+  text-transform:uppercase;letter-spacing:1px;
+  font-weight:300;margin-bottom:12px
+}
+.detail-summary-label svg{width:13px;height:13px;opacity:.5}
+.detail-summary-text{font-size:.85rem;line-height:1.8;font-weight:300;color:var(--text);white-space:pre-wrap}
+.detail-takeaways{margin-bottom:16px}
+.detail-takeaways h3{font-size:.85rem;font-weight:500;margin-bottom:10px;color:var(--text)}
+.detail-takeaway-item{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border2)}
+.detail-takeaway-item:last-child{border-bottom:none}
+.detail-takeaway-num{width:22px;height:22px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--muted2);flex-shrink:0;font-weight:500}
+.detail-takeaway-text{font-size:.8rem;line-height:1.55;font-weight:300;color:var(--muted);padding-top:2px}
+.detail-actions{display:flex;gap:8px;flex-wrap:wrap}
+.detail-actions .btn-primary{flex:1;min-width:140px}
+
+/* Loading */
+.loader-dots{display:flex;gap:6px;justify-content:center;padding:32px 0}
+.loader-dots span{width:7px;height:7px;border-radius:50%;background:var(--muted2);animation:loaderBounce 1.2s ease-in-out infinite}
+.loader-dots span:nth-child(2){animation-delay:.15s}
+.loader-dots span:nth-child(3){animation-delay:.3s}
+@keyframes loaderBounce{0%,80%,100%{transform:scale(.6);opacity:.3}40%{transform:scale(1);opacity:1}}
+
+/* Carousel bar */
+.carousel-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  padding:12px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  animation:slideDown .3s ease
+}
+.carousel-bar-info{display:flex;flex-direction:column;gap:2px}
+.carousel-bar-slides{font-size:.75rem;color:var(--muted);font-weight:400}
+.carousel-bar-topic{font-size:.65rem;color:var(--muted2);font-weight:300}
+
+/* Carousel overlay */
+.carousel-overlay{
+  position:fixed;inset:0;z-index:300;
+  background:var(--bg);overflow-y:auto;
+  padding:0 20px 100px;
+  display:none
+}
+.carousel-overlay.open{display:block;animation:fadeIn .25s ease}
+.carousel-overlay-header{
+  display:flex;flex-direction:column;gap:10px;
+  padding:16px 0 12px;
+  position:sticky;top:0;z-index:10;
+  background:var(--bg)
+}
+.carousel-overlay-header-row{
+  display:flex;align-items:center;justify-content:space-between
+}
+.tpl-switcher{
+  display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;
+  scrollbar-width:none;-ms-overflow-style:none
+}
+.tpl-switcher::-webkit-scrollbar{display:none}
+.tpl-sw-btn{
+  flex-shrink:0;padding:4px 14px;
+  border-radius:50px;border:1px solid var(--border);
+  background:transparent;font-size:.7rem;font-weight:400;
+  font-family:inherit;color:var(--muted2);cursor:pointer;
+  transition:all .2s ease;white-space:nowrap
+}
+.tpl-sw-btn:hover{border-color:var(--muted);color:var(--text)}
+.tpl-sw-btn.active{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.carousel-overlay-header .back-btn{
+  background:none;border:none;
+  color:var(--muted);font-size:.82rem;
+  font-family:inherit;cursor:pointer;
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 0;transition:color .2s
+}
+.carousel-overlay-header .back-btn:hover{color:var(--primary)}
+.carousel-preview{display:flex;flex-direction:column;gap:16px;align-items:center;padding-top:4px}
+.slide-wrapper{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);padding:14px;
+  width:100%;max-width:420px;
+  position:relative
+}
+.slide-canvas{width:100%;aspect-ratio:1/1;border-radius:var(--r-sm);overflow:hidden;position:relative}
+.slide-cover{width:100%;height:100%;padding:40px 32px;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.slide-cover::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,rgba(39,233,181,0.04) 0%,transparent 65%);pointer-events:none}
+.slide-cover-deco{position:absolute;width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.05)}
+.slide-cover-deco.tl{top:18px;left:18px}.slide-cover-deco.tr{top:18px;right:18px}
+.slide-cover-deco.bl{bottom:18px;left:18px}.slide-cover-deco.br{bottom:18px;right:18px}
+.slide-cover-num{font-size:.68rem;font-weight:400;color:rgba(255,255,255,0.18);letter-spacing:2px;margin-bottom:auto}
+.slide-cover-title{flex:1;display:flex;align-items:center;justify-content:center;font-size:1.25rem;font-weight:700;line-height:1.35;color:#fff;text-align:center;word-break:break-word;padding:12px 0}
+.slide-cover-footer{margin-top:auto;padding-top:12px;display:flex;justify-content:space-between;font-size:.56rem;color:rgba(255,255,255,0.2);letter-spacing:.4px;font-weight:400}
+.slide-inner{width:100%;height:100%;padding:32px 28px;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.slide-inner::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,rgba(39,233,181,0.04) 0%,transparent 65%);pointer-events:none}
+.slide-inner-deco{position:absolute;width:5px;height:5px;border-radius:50%}
+.slide-inner-deco.tr{top:18px;right:18px}.slide-inner-deco.bl{bottom:18px;left:18px}.slide-inner-deco.br{bottom:18px;right:18px}
+[dir="rtl"] .slide-inner-deco.tr{right:auto;left:18px}[dir="rtl"] .slide-inner-deco.bl{left:auto;right:18px}
+.slide-inner-accent{position:absolute;top:24px;left:0;width:3px;height:32px;border-radius:0 2px 2px 0;background:linear-gradient(180deg,var(--primary),rgba(39,233,181,0.3))}
+[dir="rtl"] .slide-inner-accent{left:auto;right:0;border-radius:2px 0 0 2px}
+.slide-inner-body{flex:1;display:flex;flex-direction:column;justify-content:center}
+.slide-inner-title{font-size:1rem;font-weight:700;line-height:1.3;color:#fff;margin-bottom:14px;padding-top:4px}
+.slide-inner-subtitle{font-size:.78rem;font-weight:400;line-height:1.7;color:rgba(255,255,255,0.65);overflow-y:auto;white-space:pre-wrap}
+.slide-inner-num{position:absolute;bottom:16px;right:22px;font-size:.58rem;font-weight:400;color:rgba(255,255,255,0.15);letter-spacing:1px}
+[dir="rtl"] .slide-inner-num{right:auto;left:22px}
+.slide-num-badge{position:absolute;top:-9px;right:-9px;width:26px;height:26px;border-radius:50%;background:var(--primary);color:#051824;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;z-index:10}
+.slide-actions{display:flex;gap:6px;margin-top:6px}
+.slide-actions button{flex:1;padding:5px 10px;font-size:.75rem}
+.empty-state{text-align:center;padding:50px 20px}
+.empty-state p{color:var(--muted2);font-weight:300;font-size:.85rem}
+.app-footer{text-align:center;padding:32px 0 16px;border-top:1px solid var(--border2);margin-top:auto}
+.app-footer p{font-size:.7rem;color:var(--muted2);font-weight:300}
+.toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+  z-index:2000;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  padding:8px 18px;
+  font-size:.78rem;color:var(--text);font-weight:300;
+  font-family:inherit;
+  box-shadow:0 4px 20px rgba(0,0,0,.4);
+  opacity:0;transition:opacity .3s ease;
+  pointer-events:none
+}
+.toast.show{opacity:1}
+@media (max-width: 640px) {
+  .feed-grid{grid-template-columns:1fr}
+  .topic-input-wrap{flex-direction:column}
+  .app{padding:0 14px 100px}
+  .slide-cover{padding:28px 22px}
+  .slide-cover-title{font-size:1.1rem}
+  .slide-inner{padding:24px 20px}
+  .slide-inner-title{font-size:.9rem}
+  .slide-inner-subtitle{font-size:.74rem}
+  .detail-header h2{font-size:1.05rem}
+  .carousel-overlay{padding:0 14px 80px}
+}
+
+/* ── Template Picker ── */
+.tpl-overlay{position:fixed;inset:0;z-index:350;background:var(--bg);overflow-y:auto;padding:0 20px 100px;display:none}
+.tpl-overlay.open{display:block;animation:fadeIn .25s ease}
+.tpl-overlay-header{display:flex;align-items:flex-start;justify-content:space-between;padding:16px 0 6px;position:sticky;top:0;z-index:10;background:var(--bg)}
+.tpl-overlay-header h3{font-size:1rem;font-weight:500;color:var(--text)}
+.tpl-overlay-sub{font-size:.78rem;color:var(--muted2);font-weight:300;margin-bottom:20px}
+.tpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.tpl-card{cursor:pointer;border-radius:var(--r-lg);overflow:hidden;border:2px solid var(--border);transition:border-color .2s,transform .15s}
+.tpl-card:hover{border-color:var(--muted);transform:translateY(-2px)}
+.tpl-card.tpl-selected{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary)}
+.tpl-preview{overflow:hidden;position:relative}
+.tpl-preview-inner{position:absolute;top:0;left:0;transform-origin:top left}
+.tpl-name{padding:8px 12px;font-size:.75rem;font-weight:500;color:var(--text);background:var(--surface);border-top:1px solid var(--border)}
+
+/* ── Template: BOLD ── */
+.slide-bold{width:100%;height:100%;background:#0A0A0A;padding:26px 22px 20px;display:flex;flex-direction:column;position:relative;overflow:hidden;box-sizing:border-box}
+.slide-bold-topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.slide-bold-brand{font-size:.58rem;color:rgba(255,255,255,0.2);letter-spacing:.5px;font-weight:400}
+.slide-bold-tags{font-size:.56rem;color:rgba(255,255,255,0.13)}
+.slide-bold-num{font-size:2.8rem;font-weight:900;color:#7C3AED;letter-spacing:-2px;line-height:1;margin-bottom:6px}
+.slide-bold-accent{width:52px;height:4px;background:#7C3AED;border-radius:2px;margin-bottom:14px}
+.slide-bold-center{flex:1;display:flex;flex-direction:column;justify-content:center}
+.slide-bold-title{font-size:1.3rem;font-weight:800;color:#fff;line-height:1.25}
+.slide-bold-body{font-size:.82rem;font-weight:400;color:rgba(255,255,255,0.62);line-height:1.75;margin-top:10px}
+.slide-bold-footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+.slide-bold-arrow{font-size:1.3rem;color:#7C3AED;font-weight:900;line-height:1}
+.slide-bold-counter{font-size:.58rem;color:rgba(255,255,255,0.18)}
+.slide-bold-cta-wrap{background:#7C3AED;margin:-20px -22px -20px;padding:16px 22px;margin-top:10px}
+.slide-bold-cta-title{font-size:1rem;font-weight:800;color:#fff;margin-bottom:5px;line-height:1.2}
+.slide-bold-cta-body{font-size:.71rem;color:rgba(255,255,255,0.78);line-height:1.55}
+[dir="rtl"] .slide-bold-num{letter-spacing:0}
+[dir="rtl"] .slide-bold-topbar,[dir="rtl"] .slide-bold-footer{flex-direction:row-reverse}
+[dir="rtl"] .slide-bold-accent{margin-right:0}
+
+/* ── Template: MONO ── */
+.slide-mono{width:100%;height:100%;background:linear-gradient(145deg,#1C1C1E 0%,#2A2A2A 100%);padding:24px 22px 20px;display:flex;flex-direction:column;position:relative;overflow:hidden;box-sizing:border-box}
+.slide-mono-bignumber{position:absolute;top:-14px;right:-4px;font-size:7rem;font-weight:900;color:rgba(255,255,255,0.04);letter-spacing:-5px;line-height:1;pointer-events:none;user-select:none}
+[dir="rtl"] .slide-mono-bignumber{right:auto;left:-4px}
+.slide-mono-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.slide-mono-brand{font-size:.58rem;color:rgba(255,255,255,0.22);letter-spacing:.4px}
+.slide-mono-tag{font-size:.56rem;color:rgba(255,255,255,0.14)}
+.slide-mono-num{font-size:.7rem;font-weight:600;color:rgba(255,255,255,0.32);letter-spacing:1px;margin-bottom:12px}
+.slide-mono-center{flex:1;display:flex;flex-direction:column;justify-content:center}
+.slide-mono-title{font-size:1.3rem;font-weight:700;color:#fff;line-height:1.28}
+.slide-mono-body{font-size:.82rem;color:rgba(255,255,255,0.58);line-height:1.75;font-weight:300;margin-top:10px}
+.slide-mono-footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+.slide-mono-swipe{font-size:.58rem;color:rgba(255,255,255,0.16)}
+.slide-mono-circle{width:20px;height:20px;border-radius:50%;border:1px solid rgba(255,255,255,0.14);display:flex;align-items:center;justify-content:center;font-size:.52rem;color:rgba(255,255,255,0.22)}
+.slide-mono-tip-box{background:rgba(255,255,255,0.06);border-left:3px solid rgba(255,255,255,0.35);padding:9px 11px;border-radius:0 6px 6px 0;margin-top:8px}
+[dir="rtl"] .slide-mono-tip-box{border-left:none;border-right:3px solid rgba(255,255,255,0.35);border-radius:6px 0 0 6px}
+.slide-mono-cta-box{background:rgba(255,255,255,0.07);border-radius:8px;padding:11px;margin-top:8px;text-align:center}
+[dir="rtl"] .slide-mono-header,[dir="rtl"] .slide-mono-footer{flex-direction:row-reverse}
+
+/* ── Template: LIGHT ── */
+.slide-light{width:100%;height:100%;background:#F2F2F2;padding:24px 22px 20px;display:flex;flex-direction:column;position:relative;overflow:hidden;box-sizing:border-box}
+.slide-light-sphere{position:absolute;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 38% 38%,rgba(170,170,170,0.85),rgba(210,210,210,0.15));right:-20px;bottom:-20px;pointer-events:none}
+[dir="rtl"] .slide-light-sphere{right:auto;left:-20px}
+.slide-light-tag{font-size:.58rem;color:#999;letter-spacing:1px;text-transform:uppercase;margin-bottom:auto}
+.slide-light-num{font-size:.66rem;font-weight:600;color:#C0C0C0;letter-spacing:1px;margin-bottom:8px}
+.slide-light-center{flex:1;display:flex;flex-direction:column;justify-content:center}
+.slide-light-title{font-size:1.3rem;font-weight:800;color:#111;line-height:1.25}
+.slide-light-line{width:34px;height:2px;background:#222;border-radius:1px;margin:12px 0 10px}
+.slide-light-body{font-size:.82rem;color:#444;line-height:1.75}
+.slide-light-footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+.slide-light-brand{font-size:.56rem;color:#C0C0C0}
+.slide-light-counter{font-size:.56rem;color:#CCC}
+.slide-light-cta-wrap{background:#111;border-radius:8px;padding:12px 14px;margin-top:10px}
+.slide-light-cta-title{font-size:.95rem;font-weight:700;color:#fff;margin-bottom:4px;line-height:1.2}
+.slide-light-cta-body{font-size:.69rem;color:rgba(255,255,255,0.7);line-height:1.55}
+[dir="rtl"] .slide-light-footer{flex-direction:row-reverse}
+[dir="rtl"] .slide-light-line{margin-right:0}
+
+/* ── Template: PRO ── */
+.slide-pro{width:100%;height:100%;background:#0B1623;display:flex;flex-direction:column;position:relative;overflow:hidden;box-sizing:border-box}
+.slide-pro-topbar{background:var(--primary);padding:5px 18px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.slide-pro-brand{font-size:.56rem;font-weight:700;color:#051824;letter-spacing:.8px;text-transform:uppercase}
+.slide-pro-tag{font-size:.54rem;color:#051824;opacity:.55}
+.slide-pro-inner{flex:1;display:flex;flex-direction:column;padding:14px 18px 16px}
+.slide-pro-num{font-size:2.8rem;font-weight:900;color:rgba(255,255,255,0.04);letter-spacing:-2px;line-height:1;margin-bottom:-4px}
+.slide-pro-center{flex:1;display:flex;flex-direction:column;justify-content:center;padding-top:4px}
+.slide-pro-title{font-size:1.25rem;font-weight:700;color:#fff;line-height:1.28}
+.slide-pro-text{font-size:.82rem;color:rgba(255,255,255,0.58);line-height:1.75;font-weight:300;margin-top:10px}
+.slide-pro-footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+.slide-pro-dot{width:5px;height:5px;border-radius:50%;background:var(--primary)}
+.slide-pro-counter{font-size:.56rem;color:rgba(255,255,255,0.18)}
+.slide-pro-cta-line{border-top:2px solid var(--primary);padding-top:9px;margin-top:9px}
+[dir="rtl"] .slide-pro-topbar,[dir="rtl"] .slide-pro-footer{flex-direction:row-reverse}
+[dir="rtl"] .slide-pro-num{letter-spacing:0}
+
+@media(max-width:640px){.tpl-grid{gap:10px}}
+
+/* ── Standalone Carousel Creator ── */
+.creator-section{padding:8px 0 24px}
+.creator-back{
+  background:none;border:none;
+  color:var(--muted);font-size:.82rem;
+  font-family:inherit;cursor:pointer;
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 0;margin-bottom:20px;
+  transition:color .2s
+}
+.creator-back:hover{color:var(--primary)}
+.creator-header{margin-bottom:20px}
+.creator-header h2{font-size:1.15rem;font-weight:600;line-height:1.35;margin-bottom:4px}
+.creator-header p{font-size:.82rem;color:var(--muted);font-weight:300;line-height:1.6}
+.creator-form{display:flex;flex-direction:column;gap:12px}
+.creator-field label{display:block;font-size:.72rem;color:var(--muted2);font-weight:400;margin-bottom:5px;letter-spacing:.3px;text-transform:uppercase}
+.creator-input{
+  width:100%;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  padding:12px 18px;
+  font-size:.9rem;font-weight:300;
+  font-family:inherit;
+  color:var(--text);
+  outline:none;
+  transition:border-color .2s
+}
+.creator-input:focus{border-color:var(--primary)}
+.creator-input::placeholder{color:var(--muted2)}
+.creator-textarea{
+  width:100%;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  padding:14px 18px;
+  font-size:.85rem;font-weight:300;
+  font-family:inherit;
+  color:var(--text);
+  outline:none;
+  resize:vertical;
+  min-height:220px;
+  line-height:1.7;
+  transition:border-color .2s
+}
+.creator-textarea:focus{border-color:var(--primary)}
+.creator-textarea::placeholder{color:var(--muted2)}
+.creator-lang-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.creator-lang-label{font-size:.72rem;color:var(--muted2);font-weight:400;text-transform:uppercase;letter-spacing:.3px}
+.creator-lang-btn{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:50px;
+  padding:5px 16px;
+  font-size:.72rem;font-weight:500;
+  font-family:inherit;
+  color:var(--muted);
+  cursor:pointer;
+  transition:all .2s;
+  letter-spacing:.4px
+}
+.creator-lang-btn:hover{border-color:var(--muted);color:var(--text)}
+.creator-lang-btn.active{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.creator-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.creator-actions .btn-primary{flex:1;min-width:160px}
+.btn-creator-open{
+  background:transparent;
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  padding:7px 16px;
+  font-size:.78rem;font-weight:500;
+  font-family:inherit;
+  color:var(--muted);
+  cursor:pointer;
+  transition:all .2s;
+  display:inline-flex;align-items:center;gap:5px;
+  white-space:nowrap
+}
+.btn-creator-open:hover{border-color:var(--primary);color:var(--primary)}
+@media(max-width:640px){
+  .creator-textarea{min-height:160px}
+  .creator-actions{flex-direction:column}
+  .creator-actions .btn-primary{min-width:unset}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-layer"></div>
+<div class="app">
+
+  <div class="header fade-up">
+    <div class="header-top">
+      <h1 id="mainTitle">Topic <em>→ Carousel</em></h1>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn-creator-open" id="btnOpenCreator">Create Carousel ✦</button>
+        <button class="lang-btn" id="langToggle">AR</button>
+      </div>
+    </div>
+    <p class="header-sub" id="headerSubtitle">Search any topic to explore the latest developments, then generate an Instagram-ready carousel.</p>
+  </div>
+
+  <div class="topic-section">
+    <div class="topic-input-wrap">
+      <input class="topic-input" id="topicInput" type="text" placeholder="e.g. Artificial Intelligence, Climate Change..." autofocus>
+      <button class="btn-primary" id="btnExplore">Explore</button>
+    </div>
+  </div>
+
+  <!-- Sections -->
+  <div id="sectionCreator" class="section">
+    <div class="creator-section">
+      <button class="creator-back" id="creatorBackBtn"><span class="back-arrow">&#8592;</span> <span class="back-label" id="creatorBackLabel">Back</span></button>
+      <div class="creator-header">
+        <h2 id="creatorTitle">Create a Carousel</h2>
+        <p id="creatorSubtitle">Paste your content, notes, or topic below and generate a ready-to-share Instagram carousel.</p>
+      </div>
+      <div class="creator-form">
+        <div class="creator-field">
+          <label id="creatorTitleLabel">Topic / Title</label>
+          <input class="creator-input" id="creatorTopicInput" type="text" placeholder="e.g. The Future of AI in Healthcare">
+        </div>
+        <div class="creator-field">
+          <label id="creatorContentLabel">Content</label>
+          <textarea class="creator-textarea" id="creatorContentInput" rows="12" placeholder="Paste your content here — topic, article, notes, anything..."></textarea>
+        </div>
+        <div class="creator-field">
+          <span class="creator-lang-label" id="creatorLangLabel">Language</span>
+          <div class="creator-lang-row" id="creatorLangRow">
+            <button class="creator-lang-btn active" data-clang="en">EN</button>
+            <button class="creator-lang-btn" data-clang="ar">AR</button>
+          </div>
+        </div>
+        <div class="creator-actions">
+          <button class="btn-primary" id="btnGenerateCreator">Generate Carousel →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sectionFeed" class="section active">
+    <div class="feed-section">
+      <div class="categories" id="categories">
+        <button class="cat-btn active" data-cat="all">All</button>
+        <button class="cat-btn" data-cat="technology">Technology</button>
+        <button class="cat-btn" data-cat="science">Science</button>
+        <button class="cat-btn" data-cat="health">Health</button>
+        <button class="cat-btn" data-cat="business">Business</button>
+        <button class="cat-btn" data-cat="sports">Sports</button>
+        <button class="cat-btn" data-cat="world">World</button>
+      </div>
+      <div class="feed-header">
+        <h3 id="headlinesTitle">Headlines</h3>
+        <button class="feed-refresh" id="feedRefreshBtn">&#8635; <span id="refreshLabel">Refresh</span></button>
+      </div>
+      <div id="feedGrid" class="feed-grid"></div>
+    </div>
+  </div>
+
+  <div id="sectionExplore" class="section">
+    <div class="explore-top">
+      <button class="back-btn" id="exploreBackBtn"><span class="back-arrow">&#8592;</span> <span class="back-label">Back</span></button>
+      <span class="explore-topic-label" id="exploreTopicLabel"></span>
+    </div>
+    <div class="subtopic-section">
+      <div class="subtopic-header">
+        <h3 id="subtopicsTitle">Latest Developments</h3>
+      </div>
+      <div class="subtopic-tabs" id="subtopicTabs"></div>
+    </div>
+    <div id="exploreGrid" class="feed-grid"></div>
+  </div>
+
+  <div class="detail-view" id="detailView">
+    <button class="detail-back" id="detailBackBtn"><span class="back-arrow">&#8592;</span> <span class="back-label">Back to results</span></button>
+    <div id="detailContent"></div>
+  </div>
+
+  <div class="carousel-bar" id="carouselBar" style="display:none">
+    <div class="carousel-bar-info">
+      <span class="carousel-bar-slides" id="carouselBarSlides">5 slides</span>
+      <span class="carousel-bar-topic" id="carouselBarTopic"></span>
+    </div>
+    <button class="btn-primary" id="btnViewCarousel">View Carousel &#8594;</button>
+  </div>
+
+  <div class="carousel-overlay" id="carouselOverlay">
+    <div class="carousel-overlay-header">
+      <div class="carousel-overlay-header-row">
+        <button class="back-btn" id="carouselCloseBtn"><span class="back-arrow">&#8592;</span> <span class="back-label">Back</span></button>
+        <button class="btn-primary" id="carouselDownloadAll">Download All</button>
+      </div>
+      <div class="tpl-switcher" id="tplSwitcher"></div>
+    </div>
+    <div id="carouselPreview" class="carousel-preview"></div>
+  </div>
+
+  <div class="tpl-overlay" id="tplOverlay">
+    <div class="tpl-overlay-header">
+      <div>
+        <h3 id="tplTitle">Choose a Template</h3>
+        <p class="tpl-overlay-sub" id="tplSub">Select a design for your carousel</p>
+      </div>
+      <button class="back-btn" id="tplOverlayClose" style="font-size:1rem;padding:4px 8px">✕</button>
+    </div>
+    <div class="tpl-grid" id="tplGrid"></div>
+  </div>
+
+  <div class="app-footer">
+    <p id="footerText">Topic → Carousel</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── i18n ──
+const i18n = {
+  en: {
+    pageTitle: 'Topic → Carousel',
+    mainTitle: 'Topic <em>→ Carousel</em>',
+    subtitle: 'Search any topic to explore the latest developments, then generate an Instagram-ready carousel.',
+    searchPlaceholder: 'e.g. Artificial Intelligence, Climate Change...',
+    explore: 'Explore', headlines: 'Headlines', refresh: 'Refresh',
+    back: 'Back', backResults: 'Back to results',
+    latest: 'Latest Developments',
+    visitOriginal: 'Visit Original ↗',
+    generateCarousel: 'Generate Carousel →',
+    groqSummary: 'groq summary',
+    keyTakeaways: 'Key Takeaways',
+    loading: 'Loading headlines...',
+    generating: 'Generating analysis...',
+    slidesLabel: 'slides',
+    downloadAll: 'Download All',
+    downloadSlide: 'Download Slide',
+    viewCarousel: 'View Carousel →',
+    all: 'All',
+    enterTopic: 'Enter a topic',
+    saved: 'Saved',
+    noArticles: 'No articles found.',
+    noFeed: 'No headlines available right now.',
+    feedError: 'Could not load headlines.',
+    generateError: 'Failed to generate.',
+    exploreError: 'Failed to explore topic.',
+    slidesInfo: '{n} slides',
+    footer: 'Topic → Carousel',
+    categoryLabels: {
+      all: 'All', technology: 'Technology', science: 'Science',
+      health: 'Health', business: 'Business', sports: 'Sports', world: 'World'
+    },
+    createCarouselBtn: 'Create Carousel ✦',
+    creatorTitle: 'Create a Carousel',
+    creatorSubtitle: 'Paste your content, notes, or topic below and generate a ready-to-share Instagram carousel.',
+    creatorTopicLabel: 'Topic / Title',
+    creatorTopicPlaceholder: 'e.g. The Future of AI in Healthcare',
+    creatorContentLabel: 'Content',
+    creatorContentPlaceholder: 'Paste your content here — topic, article, notes, anything...',
+    creatorLangLabel: 'Language',
+    creatorGenerate: 'Generate Carousel →',
+    creatorEnterTitle: 'Please enter a title or topic.',
+    creatorEnterContent: 'Please paste some content.'
+  },
+  ar: {
+    pageTitle: 'موضوع ← كاروسيل',
+    mainTitle: 'موضوع <em>← كاروسيل</em>',
+    subtitle: 'ابحث عن أي موضوع لاستكشاف آخر التطورات، ثم أنشئ كاروسيل جاهز لإنستغرام.',
+    searchPlaceholder: 'مثال: الذكاء الاصطناعي، التغير المناخي...',
+    explore: 'استكشف', headlines: 'العناوين الرئيسية', refresh: 'تحديث',
+    back: 'عودة', backResults: 'عودة للنتائج',
+    latest: 'آخر التطورات',
+    visitOriginal: 'الرابط الأصلي ↗',
+    generateCarousel: 'إنشاء كاروسيل ←',
+    groqSummary: 'ملخص جروك',
+    keyTakeaways: 'أهم النقاط',
+    loading: 'جارٍ تحميل العناوين...',
+    generating: 'جارٍ إنشاء التحليل...',
+    slidesLabel: 'شرائح',
+    downloadAll: 'تحميل الكل',
+    downloadSlide: 'تحميل الشريحة',
+    viewCarousel: 'عرض الكاروسيل ←',
+    all: 'الكل',
+    enterTopic: 'أدخل موضوعاً',
+    saved: 'تم الحفظ',
+    noArticles: 'لا توجد مقالات.',
+    noFeed: 'لا توجد عناوين متاحة الآن.',
+    feedError: 'تعذر تحميل العناوين.',
+    generateError: 'تعذر الإنشاء.',
+    exploreError: 'تعذر استكشاف الموضوع.',
+    slidesInfo: '{n} شرائح',
+    footer: 'موضوع ← كاروسيل',
+    categoryLabels: {
+      all: 'الكل', technology: 'تكنولوجيا', science: 'علوم',
+      health: 'صحة', business: 'أعمال', sports: 'رياضة', world: 'عالم'
+    },
+    createCarouselBtn: 'أنشئ كاروسيل ✦',
+    creatorTitle: 'أنشئ كاروسيل',
+    creatorSubtitle: 'الصق محتواك أو ملاحظاتك أدناه وأنشئ كاروسيل جاهزاً للنشر على إنستغرام.',
+    creatorTopicLabel: 'الموضوع / العنوان',
+    creatorTopicPlaceholder: 'مثال: مستقبل الذكاء الاصطناعي في الرعاية الصحية',
+    creatorContentLabel: 'المحتوى',
+    creatorContentPlaceholder: 'الصق محتواك هنا — موضوع، مقال، ملاحظات، أي شيء...',
+    creatorLangLabel: 'اللغة',
+    creatorGenerate: '← إنشاء كاروسيل',
+    creatorEnterTitle: 'الرجاء إدخال عنوان أو موضوع.',
+    creatorEnterContent: 'الرجاء لصق بعض المحتوى.'
+  }
+};
+
+let currentLang = 'en';
+function t(key, subs = {}) {
+  const val = key.split('.').reduce((o, k) => o && o[k], i18n[currentLang]);
+  if (!val) return key;
+  return val.replace(/\{(\w+)\}/g, (_, k) => subs[k] ?? `{${k}}`);
+}
+
+function updateLangUI() {
+  const isAr = currentLang === 'ar';
+  document.documentElement.lang = currentLang;
+  document.documentElement.dir = isAr ? 'rtl' : 'ltr';
+  const langBtn = document.getElementById('langToggle');
+  langBtn.textContent = isAr ? 'EN' : 'AR';
+  langBtn.classList.toggle('lang-active', isAr);
+
+  document.getElementById('pageTitle').textContent = t('pageTitle');
+  document.getElementById('mainTitle').innerHTML = t('mainTitle');
+  document.getElementById('headerSubtitle').textContent = t('subtitle');
+  document.getElementById('topicInput').placeholder = t('searchPlaceholder');
+  document.getElementById('btnExplore').textContent = t('explore');
+  document.getElementById('headlinesTitle').textContent = t('headlines');
+  document.getElementById('refreshLabel').textContent = t('refresh');
+  document.getElementById('subtopicsTitle').textContent = t('latest');
+  document.getElementById('footerText').textContent = t('footer');
+
+  document.querySelectorAll('#exploreBackBtn .back-label').forEach(el => el.textContent = t('back'));
+  document.querySelectorAll('#detailBackBtn .back-label').forEach(el => el.textContent = t('backResults'));
+  document.querySelectorAll('#carouselCloseBtn .back-label').forEach(el => el.textContent = t('back'));
+
+  document.querySelectorAll('.cat-btn').forEach(btn => {
+    const cat = btn.dataset.cat;
+    btn.textContent = t(`categoryLabels.${cat}`);
+  });
+
+  document.getElementById('btnOpenCreator').textContent = t('createCarouselBtn');
+  document.getElementById('creatorTitle').textContent = t('creatorTitle');
+  document.getElementById('creatorSubtitle').textContent = t('creatorSubtitle');
+  document.getElementById('creatorTitleLabel').textContent = t('creatorTopicLabel');
+  document.getElementById('creatorTopicInput').placeholder = t('creatorTopicPlaceholder');
+  document.getElementById('creatorContentLabel').textContent = t('creatorContentLabel');
+  document.getElementById('creatorContentInput').placeholder = t('creatorContentPlaceholder');
+  document.getElementById('creatorLangLabel').textContent = t('creatorLangLabel');
+  document.getElementById('btnGenerateCreator').innerHTML = t('creatorGenerate');
+  document.getElementById('creatorBackLabel').textContent = t('back');
+
+  if (state.carouselSlides.length) updateCarouselBarInfo();
+}
+
+function updateCarouselBarInfo() {
+  document.getElementById('carouselBarSlides').textContent = t('slidesInfo', { n: state.carouselSlides.length });
+  document.getElementById('carouselBarTopic').textContent = state.carouselTopic;
+  document.getElementById('btnViewCarousel').innerHTML = t('viewCarousel');
+  document.getElementById('carouselDownloadAll').textContent = t('downloadAll');
+}
+
+// ── State ──
+let state = {
+  lang: 'en',
+  topic: '',
+  subtopics: [],
+  articles: [],
+  currentSubtopic: 'all',
+  currentCategory: 'all',
+  carouselSlides: [],
+  carouselTopic: '',
+  selectedArticle: null,
+  detailSummary: '',
+  detailTakeaways: [],
+  activeTemplate: 'bold'
+};
+
+let feedArticles = [];
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  if (id) document.getElementById(id).classList.add('active');
+}
+
+// ── Feed ──
+async function fetchFeed(category) {
+  const cat = category || state.currentCategory;
+  const grid = document.getElementById('feedGrid');
+  grid.innerHTML = `<div class="feed-status"><div class="loader-dots"><span></span><span></span><span></span></div></div>`;
+
+  try {
+    const res = await fetch(`/api/feed?category=${cat}`);
+    const data = await res.json();
+    if (data.status !== 'ok') throw new Error(data.error || 'API error');
+    feedArticles = (data.articles || []).map((a, i) => ({ ...a, _idx: i }));
+    renderFeed();
+  } catch (err) {
+    console.error('feed error:', err);
+    grid.innerHTML = `<div class="feed-status">${t('feedError')}</div>`;
+  }
+}
+
+function renderFeed() {
+  const grid = document.getElementById('feedGrid');
+  if (!feedArticles.length) {
+    grid.innerHTML = `<div class="feed-status">${t('noFeed')}</div>`;
+    return;
+  }
+
+  grid.innerHTML = feedArticles.map(a => {
+    const imgHtml = a.imageUrl
+      ? `<img class="feed-card-img" src="${a.imageUrl}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="feed-card-img-placeholder" style="display:none">&#9670;</div>`
+      : `<div class="feed-card-img-placeholder">&#9670;</div>`;
+    return `
+      <div class="feed-card" data-fidx="${a._idx}">
+        ${imgHtml}
+        <div class="feed-card-body">
+          <div class="feed-card-meta">
+            <span class="feed-card-source">${a.source || ''}</span>
+            <span class="feed-card-subtopic">${a.topic || ''}</span>
+          </div>
+          <div class="feed-card-title">${a.title || 'Untitled'}</div>
+          <div class="feed-card-brief">${a.brief || ''}</div>
+          <div style="margin-top:8px"><span class="feed-card-date">${a.date || ''}</span></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  grid.querySelectorAll('.feed-card').forEach(el => {
+    el.addEventListener('click', () => {
+      const idx = parseInt(el.dataset.fidx);
+      const article = feedArticles.find(a => a._idx === idx);
+      if (article) openArticleFromFeed(article);
+    });
+  });
+}
+
+// ── Explore ──
+document.getElementById('btnExplore').addEventListener('click', doExploreClick);
+document.getElementById('topicInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doExploreClick();
+});
+
+function doExploreClick() {
+  const topic = document.getElementById('topicInput').value.trim();
+  if (!topic) { toast(t('enterTopic')); return; }
+  doExplore(topic);
+}
+
+async function doExplore(topic) {
+  const btn = document.getElementById('btnExplore');
+  btn.disabled = true;
+  btn.textContent = t('explore') + '...';
+
+  state.topic = topic;
+  state.currentSubtopic = 'all';
+  state.articles = [];
+
+  document.getElementById('exploreTopicLabel').textContent = topic;
+  document.getElementById('exploreGrid').innerHTML = `<div class="feed-status"><div class="loader-dots"><span></span><span></span><span></span></div></div>`;
+  document.getElementById('subtopicTabs').innerHTML = '';
+  showSection('sectionExplore');
+
+  try {
+    const res = await fetch('/api/explore', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic, lang: currentLang })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (!data.subtopics) throw new Error('No subtopics');
+
+    state.subtopics = data.subtopics || [];
+    state.articles = (data.articles || []).map((a, i) => ({ ...a, _idx: i }));
+
+    if (!state.articles.length) {
+      document.getElementById('exploreGrid').innerHTML = `<div class="feed-status">${t('noArticles')}</div>`;
+    }
+
+    renderSubtopics();
+    renderExploreGrid();
+  } catch (err) {
+    console.error('explore error:', err);
+    document.getElementById('exploreGrid').innerHTML = `<div class="feed-status">${t('exploreError')}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = t('explore');
+  }
+}
+
+function renderSubtopics() {
+  const container = document.getElementById('subtopicTabs');
+  container.innerHTML = `<button class="subtopic-btn active" data-subtopic="all">${t('all')}</button>
+    ${state.subtopics.map(st => `<button class="subtopic-btn" data-subtopic="${st}">${st}</button>`).join('')}`;
+
+  container.querySelectorAll('.subtopic-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      container.querySelectorAll('.subtopic-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.currentSubtopic = btn.dataset.subtopic;
+      renderExploreGrid();
+    });
+  });
+}
+
+function renderExploreGrid() {
+  const grid = document.getElementById('exploreGrid');
+  const filtered = state.currentSubtopic === 'all'
+    ? state.articles
+    : state.articles.filter(a => a.subtopic === state.currentSubtopic);
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="feed-status">${t('noArticles')}</div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(a => {
+    const imgHtml = a.imageUrl
+      ? `<img class="feed-card-img" src="${a.imageUrl}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="feed-card-img-placeholder" style="display:none">&#9670;</div>`
+      : `<div class="feed-card-img-placeholder">&#9670;</div>`;
+    return `
+      <div class="feed-card" data-idx="${a._idx}">
+        ${imgHtml}
+        <div class="feed-card-body">
+          <div class="feed-card-meta">
+            <span class="feed-card-source">${a.source || ''}</span>
+            <span class="feed-card-subtopic">${a.subtopic || ''}</span>
+          </div>
+          <div class="feed-card-title">${a.title || 'Untitled'}</div>
+          <div class="feed-card-brief">${a.brief || ''}</div>
+          <div style="margin-top:8px"><span class="feed-card-date">${a.date || ''}</span></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  grid.querySelectorAll('.feed-card').forEach(el => {
+    el.addEventListener('click', () => {
+      const idx = parseInt(el.dataset.idx);
+      const article = state.articles.find(a => a._idx === idx);
+      if (article) openArticleDetail(article);
+    });
+  });
+}
+
+// ── Article Detail (from explore) ──
+async function openArticleDetail(article) {
+  state.selectedArticle = article;
+  showSection(null);
+  const detailView = document.getElementById('detailView');
+  detailView.classList.add('active');
+
+  const container = document.getElementById('detailContent');
+  container.innerHTML = `
+    <div class="detail-header">
+      <h2>${escapeHtml(article.title || '')}</h2>
+      <div class="detail-meta">
+        <span class="source">${escapeHtml(article.source || '')}</span>
+        <span>${escapeHtml(article.date || '')}</span>
+        <span class="feed-card-subtopic" style="font-size:.65rem;padding:2px 8px">${escapeHtml(article.subtopic || '')}</span>
+      </div>
+    </div>
+    <div style="text-align:center;padding:30px 0">
+      <div class="loader-dots"><span></span><span></span><span></span></div>
+      <div style="font-size:.78rem;color:var(--muted2);font-weight:300">${t('generating')}</div>
+    </div>
+  `;
+
+  try {
+    const res = await fetch('/api/explore-detail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic: state.topic, subtopic: article.subtopic, lang: currentLang })
+    });
+    if (!res.ok) throw new Error('API error');
+    const data = await res.json();
+    state.detailSummary = data.summary || '';
+    state.detailTakeaways = data.takeaways || [];
+    renderDetail(article);
+  } catch (err) {
+    console.error('detail error:', err);
+    container.innerHTML = `
+      <div class="detail-header">
+        <h2>${escapeHtml(article.title)}</h2>
+        <div class="detail-meta"><span class="source">${escapeHtml(article.source)}</span> <span>${escapeHtml(article.date)}</span></div>
+      </div>
+      <div class="empty-state"><p>${t('generateError')}</p></div>
+      ${renderDetailActions(article)}
+    `;
+  }
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function renderDetail(article) {
+  const container = document.getElementById('detailContent');
+  const takeaways = state.detailTakeaways || [];
+  const summaryHtml = (state.detailSummary || '').replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
+
+  container.innerHTML = `
+    <div class="detail-header fade-in">
+      <h2>${escapeHtml(article.title)}</h2>
+      <div class="detail-meta">
+        <span class="source">${escapeHtml(article.source)}</span>
+        <span>${escapeHtml(article.date)}</span>
+        <span class="feed-card-subtopic" style="font-size:.65rem;padding:2px 8px">${escapeHtml(article.subtopic || '')}</span>
+      </div>
+    </div>
+    <div class="detail-summary-box fade-in">
+      <div class="detail-summary-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3"/><path d="M6 7a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3"/><path d="M18 7a3 3 0 0 0-3 3v4a3 3 0 0 0 3 3"/></svg>
+        ${t('groqSummary')}
+      </div>
+      <div class="detail-summary-text">${summaryHtml}</div>
+    </div>
+    ${takeaways.length ? `
+    <div class="detail-takeaways fade-in">
+      <h3>${t('keyTakeaways')}</h3>
+      ${takeaways.map((item, i) => `
+        <div class="detail-takeaway-item">
+          <div class="detail-takeaway-num">${i+1}</div>
+          <div class="detail-takeaway-text">${escapeHtml(item)}</div>
+        </div>
+      `).join('')}
+    </div>` : ''}
+    ${renderDetailActions(article)}
+  `;
+}
+
+function renderDetailActions(article) {
+  return `
+    <div class="detail-actions fade-in">
+      <a href="${escapeHtml(article.url)}" target="_blank" rel="noopener" class="btn-ghost" style="text-decoration:none">
+        ${t('visitOriginal')}
+      </a>
+      <button class="btn-primary" onclick="buildCarouselFromDetail()">
+        ${t('generateCarousel')}
+      </button>
+    </div>
+  `;
+}
+
+// ── Back ──
+document.getElementById('detailBackBtn').addEventListener('click', closeDetail);
+document.getElementById('exploreBackBtn').addEventListener('click', closeExplore);
+
+function closeDetail() {
+  document.getElementById('detailView').classList.remove('active');
+  if (state.topic && state.articles.length) {
+    showSection('sectionExplore');
+  } else {
+    showSection('sectionFeed');
+  }
+}
+
+function closeExplore() {
+  state.topic = '';
+  state.subtopics = [];
+  state.articles = [];
+  showSection('sectionFeed');
+}
+
+// ── Article from feed ──
+async function openArticleFromFeed(article) {
+  state.selectedArticle = article;
+  showSection(null);
+  document.getElementById('detailView').classList.add('active');
+
+  const container = document.getElementById('detailContent');
+  container.innerHTML = `
+    <div class="detail-header">
+      <h2>${escapeHtml(article.title || '')}</h2>
+      <div class="detail-meta">
+        <span class="source">${escapeHtml(article.source || '')}</span>
+        <span>${escapeHtml(article.date || '')}</span>
+        <span class="feed-card-subtopic" style="font-size:.65rem;padding:2px 8px">${escapeHtml(article.topic || '')}</span>
+      </div>
+    </div>
+    <div style="text-align:center;padding:30px 0">
+      <div class="loader-dots"><span></span><span></span><span></span></div>
+      <div style="font-size:.78rem;color:var(--muted2);font-weight:300">${t('generating')}</div>
+    </div>
+  `;
+
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic: article.title, lang: currentLang })
+    });
+    if (!res.ok) throw new Error('API error');
+    const data = await res.json();
+    state.detailSummary = data.summary || '';
+    state.detailTakeaways = data.takeaways || [];
+    renderDetail(article);
+  } catch (err) {
+    console.error('summarize error:', err);
+    container.innerHTML = `
+      <div class="detail-header">
+        <h2>${escapeHtml(article.title)}</h2>
+        <div class="detail-meta"><span class="source">${escapeHtml(article.source)}</span> <span>${escapeHtml(article.date)}</span></div>
+      </div>
+      <div class="empty-state"><p>${t('generateError')}</p></div>
+      ${renderDetailActions(article)}
+    `;
+  }
+}
+
+// ── Carousel ──
+async function buildCarouselFromDetail() {
+  if (!state.selectedArticle) {
+    toast(t('generateError'));
+    return;
+  }
+
+  // Show loading state on button
+  const btn = document.querySelector('[onclick="buildCarouselFromDetail()"]');
+  if (btn) { btn.disabled = true; btn.textContent = '...'; }
+
+  try {
+    const res = await fetch('/api/carousel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: state.selectedArticle.title,
+        summary: state.detailSummary || '',
+        takeaways: state.detailTakeaways || [],
+        source: state.selectedArticle.source || '',
+        date: state.selectedArticle.date || '',
+        lang: currentLang
+      })
+    });
+
+    if (!res.ok) throw new Error('API error');
+    const data = await res.json();
+    if (!data.slides || !data.slides.length) throw new Error('No slides');
+
+    state.carouselTopic = state.selectedArticle.title || 'Article';
+
+    // Map AI slides → internal slide format
+    state.carouselSlides = data.slides.map((slide, i) => {
+      if (slide.type === 'hook') {
+        return {
+          type: 'cover', slideType: 'hook',
+          title: slide.title,
+          date: state.selectedArticle.date || '',
+          source: state.selectedArticle.source || ''
+        };
+      }
+      return {
+        type: 'content', slideType: slide.type,
+        title: slide.title || '',
+        subtitle: slide.body || ''
+      };
+    });
+
+    showTemplatePicker();
+  } catch (err) {
+    console.error('Carousel build error:', err);
+    toast(t('generateError'));
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = t('generateCarousel');
+    }
+  }
+}
+
+function renderTplSwitcher() {
+  const isAr = currentLang === 'ar';
+  const container = document.getElementById('tplSwitcher');
+  container.innerHTML = TEMPLATES.map(tpl =>
+    `<button class="tpl-sw-btn${state.activeTemplate === tpl.id ? ' active' : ''}" data-tpl="${tpl.id}">${isAr ? tpl.nameAr : tpl.name}</button>`
+  ).join('');
+  container.querySelectorAll('.tpl-sw-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.activeTemplate = btn.dataset.tpl;
+      renderCarouselSlides();
+      renderTplSwitcher();
+    });
+  });
+}
+
+function showCarousel() {
+  renderCarouselSlides();
+  renderTplSwitcher();
+  document.getElementById('carouselOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('carouselBar').style.display = 'flex';
+  updateCarouselBarInfo();
+}
+
+document.getElementById('carouselCloseBtn').addEventListener('click', hideCarousel);
+document.getElementById('btnViewCarousel').addEventListener('click', () => {
+  renderCarouselSlides();
+  document.getElementById('carouselOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+});
+
+function hideCarousel() {
+  document.getElementById('carouselOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function renderCarouselSlides() {
+  const container = document.getElementById('carouselPreview');
+  const slides = state.carouselSlides;
+  const total = slides.length;
+  const tpl = state.activeTemplate || 'bold';
+
+  if (!total) {
+    container.innerHTML = `<div class="empty-state"><p>${t('generateError')}</p></div>`;
+    return;
+  }
+
+  container.innerHTML = slides.map((slide, i) => {
+    return `
+      <div class="slide-wrapper fade-up" style="animation-delay:${i * 0.06}s">
+        <div class="slide-num-badge">${i+1}</div>
+        <div class="slide-canvas" id="slideCanvas${i}">
+          ${renderSlideByTemplate(slide, i, total, tpl)}
+        </div>
+        <div class="slide-actions">
+          <button class="btn-ghost" onclick="downloadSlide(${i})">${t('downloadSlide')}</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function downloadSlide(index) {
+  const canvas = document.getElementById(`slideCanvas${index}`);
+  if (!canvas) { toast(t('saved')); return; }
+  const prefix = (state.carouselTopic || 'slide').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'slide';
+  html2canvas(canvas, {
+    scale: 2, backgroundColor: null, useCORS: true, logging: false
+  }).then(c => {
+    const link = document.createElement('a');
+    link.download = `${prefix}-slide-${String(index+1).padStart(2,'0')}.png`;
+    link.href = c.toDataURL('image/png');
+    link.click();
+    toast(t('saved'));
+  });
+}
+
+document.getElementById('carouselDownloadAll').addEventListener('click', () => {
+  const total = state.carouselSlides.length;
+  if (!total) return;
+  let i = 0;
+  const next = () => {
+    if (i >= total) { toast(t('saved')); return; }
+    const canvas = document.getElementById(`slideCanvas${i}`);
+    if (canvas) {
+      html2canvas(canvas, { scale: 2, backgroundColor: null, useCORS: true, logging: false }).then(c => {
+        const prefix = (state.carouselTopic || 'slide').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'slide';
+        const link = document.createElement('a');
+        link.download = `${prefix}-slide-${String(i+1).padStart(2,'0')}.png`;
+        link.href = c.toDataURL('image/png');
+        link.click();
+        i++;
+        setTimeout(next, 400);
+      });
+    } else { i++; setTimeout(next, 100); }
+  };
+  next();
+});
+
+// ── Lang toggle ──
+document.getElementById('langToggle').addEventListener('click', () => {
+  currentLang = currentLang === 'en' ? 'ar' : 'en';
+  state.lang = currentLang;
+  updateLangUI();
+});
+
+// ── Category clicks ──
+document.getElementById('categories').addEventListener('click', (e) => {
+  const btn = e.target.closest('.cat-btn');
+  if (!btn) return;
+  const cat = btn.dataset.cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.currentCategory = cat;
+  fetchFeed(cat);
+});
+
+document.getElementById('feedRefreshBtn').addEventListener('click', () => fetchFeed());
+
+// ── Background Icons ──
+function generateBgIcons() {
+  const layer = document.querySelector('.bg-layer');
+  if (!layer) return;
+
+  const icons = [
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>`,
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10"/></svg>`,
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>`,
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>`,
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>`,
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>`,
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>`,
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>`,
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>`,
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>`,
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`,
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>`,
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>`,
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>`,
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>`,
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg>`,
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>`,
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`,
+    `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`
+  ];
+
+  for (let i = 0; i < icons.length; i++) {
+    const el = document.createElement('div');
+    el.className = 'bg-icon';
+    let x, y;
+    do {
+      x = Math.random() * 100;
+      y = Math.random() * 100;
+    } while (x > 22 && x < 78 && y > 15 && y < 70);
+    const size = 18 + Math.random() * 22;
+    const rot = -30 + Math.random() * 60;
+    const opacity = 0.025 + Math.random() * 0.045;
+    const delay = Math.random() * 8;
+
+    // Insert SVG with consistent stroke color
+    const svg = icons[i].replace(
+      '<svg ',
+      `<svg width="${size}" height="${size}" `
+    );
+
+    const floatDur = 5 + Math.random() * 7;
+    el.innerHTML = svg;
+    el.style.cssText = `
+      left:${x}%;top:${y}%;
+      opacity:0;
+      color:rgba(217,226,236,0.7)
+    `;
+    el.style.animation = `iconFadeIn 2s ease ${delay}s forwards, iconFloat ${floatDur}s ease ${delay + 1}s infinite`;
+    el.querySelector('svg').style.animation = `iconSpin ${15 + Math.random() * 15}s linear ${delay + 1}s infinite`;
+
+    layer.appendChild(el);
+  }
+}
+
+// ── Templates ──
+const TEMPLATES = [
+  { id: 'bold',  name: 'Bold',  nameAr: 'جريء' },
+  { id: 'mono',  name: 'Mono',  nameAr: 'أحادي' },
+  { id: 'light', name: 'Light', nameAr: 'فاتح' },
+  { id: 'pro',   name: 'Pro',   nameAr: 'احترافي' }
+];
+
+function renderSlideByTemplate(slide, i, total, tpl) {
+  const n = String(i + 1).padStart(2, '0');
+  const isCover = slide.type === 'cover';
+  const isCta = slide.slideType === 'cta';
+  const isTip = slide.slideType === 'tip';
+  const title = escapeHtml(slide.title || '');
+  const body = escapeHtml(slide.subtitle || slide.body || '');
+  const counter = `${i+1}/${total}`;
+
+  if (tpl === 'bold') {
+    if (isCover) return `<div class="slide-bold">
+      <div class="slide-bold-topbar"><span class="slide-bold-brand">Carousel</span><span class="slide-bold-tags">#topic</span></div>
+      <div class="slide-bold-center">
+        <div class="slide-bold-num">${n}</div>
+        <div class="slide-bold-accent"></div>
+        <div class="slide-bold-title">${title}</div>
+      </div>
+      <div class="slide-bold-footer"><span class="slide-bold-arrow">→</span><span class="slide-bold-counter">swipe →</span></div>
+    </div>`;
+    if (isCta) return `<div class="slide-bold">
+      <div class="slide-bold-topbar"><span class="slide-bold-brand">Carousel</span><span class="slide-bold-counter">${counter}</span></div>
+      <div class="slide-bold-center">
+        <div class="slide-bold-cta-wrap">
+          <div class="slide-bold-cta-title">${title}</div>
+          <div class="slide-bold-cta-body">${body}</div>
+        </div>
+      </div>
+    </div>`;
+    return `<div class="slide-bold">
+      <div class="slide-bold-topbar"><span class="slide-bold-brand">Carousel</span><span class="slide-bold-counter">${counter}</span></div>
+      <div class="slide-bold-center">
+        <div class="slide-bold-num">${n}</div>
+        <div class="slide-bold-accent"></div>
+        <div class="slide-bold-title">${title}</div>
+        <div class="slide-bold-body">${body}</div>
+      </div>
+      <div class="slide-bold-footer"><span class="slide-bold-arrow">→</span></div>
+    </div>`;
+  }
+
+  if (tpl === 'mono') {
+    if (isCover) return `<div class="slide-mono">
+      <div class="slide-mono-bignumber">${n}</div>
+      <div class="slide-mono-header"><span class="slide-mono-brand">Carousel</span><span class="slide-mono-tag">#topic</span></div>
+      <div class="slide-mono-center">
+        <div class="slide-mono-num">${n} / ${String(total).padStart(2,'0')}</div>
+        <div class="slide-mono-title">${title}</div>
+      </div>
+      <div class="slide-mono-footer"><span class="slide-mono-swipe">swipe →</span><div class="slide-mono-circle">↺</div></div>
+    </div>`;
+    if (isTip) return `<div class="slide-mono">
+      <div class="slide-mono-bignumber">${n}</div>
+      <div class="slide-mono-header"><span class="slide-mono-brand">Carousel</span><span class="slide-mono-tag">${counter}</span></div>
+      <div class="slide-mono-center">
+        <div class="slide-mono-num">${n}</div>
+        <div class="slide-mono-title">${title}</div>
+        <div class="slide-mono-tip-box"><div class="slide-mono-body">${body}</div></div>
+      </div>
+      <div class="slide-mono-footer"><span></span><div class="slide-mono-circle">${i+1}</div></div>
+    </div>`;
+    if (isCta) return `<div class="slide-mono">
+      <div class="slide-mono-bignumber">${n}</div>
+      <div class="slide-mono-header"><span class="slide-mono-brand">Carousel</span></div>
+      <div class="slide-mono-center" style="text-align:center">
+        <div class="slide-mono-title">${title}</div>
+        <div class="slide-mono-cta-box"><div class="slide-mono-body">${body}</div></div>
+      </div>
+      <div class="slide-mono-footer"><span class="slide-mono-swipe">Thank You</span><div class="slide-mono-circle">↑</div></div>
+    </div>`;
+    return `<div class="slide-mono">
+      <div class="slide-mono-bignumber">${n}</div>
+      <div class="slide-mono-header"><span class="slide-mono-brand">Carousel</span><span class="slide-mono-tag">${counter}</span></div>
+      <div class="slide-mono-center">
+        <div class="slide-mono-num">${n}</div>
+        <div class="slide-mono-title">${title}</div>
+        <div class="slide-mono-body">${body}</div>
+      </div>
+      <div class="slide-mono-footer"><span></span><div class="slide-mono-circle">${i+1}</div></div>
+    </div>`;
+  }
+
+  if (tpl === 'light') {
+    if (isCover) return `<div class="slide-light">
+      <div class="slide-light-sphere"></div>
+      <div class="slide-light-tag">#topic</div>
+      <div class="slide-light-center">
+        <div class="slide-light-num">${n} / ${String(total).padStart(2,'0')}</div>
+        <div class="slide-light-title">${title}</div>
+      </div>
+      <div class="slide-light-footer"><span class="slide-light-brand">Carousel</span><span class="slide-light-counter">swipe →</span></div>
+    </div>`;
+    if (isCta) return `<div class="slide-light">
+      <div class="slide-light-sphere"></div>
+      <div class="slide-light-tag">#topic</div>
+      <div class="slide-light-center">
+        <div class="slide-light-cta-wrap">
+          <div class="slide-light-cta-title">${title}</div>
+          <div class="slide-light-cta-body">${body}</div>
+        </div>
+      </div>
+      <div class="slide-light-footer"><span class="slide-light-brand">Carousel</span><span class="slide-light-counter">${counter}</span></div>
+    </div>`;
+    return `<div class="slide-light">
+      <div class="slide-light-sphere"></div>
+      <div class="slide-light-center">
+        <div class="slide-light-num">${n} / ${String(total).padStart(2,'0')}</div>
+        <div class="slide-light-title">${title}</div>
+        <div class="slide-light-line"></div>
+        <div class="slide-light-body">${body}</div>
+      </div>
+      <div class="slide-light-footer"><span class="slide-light-brand">Carousel</span><span class="slide-light-counter">${counter}</span></div>
+    </div>`;
+  }
+
+  // PRO
+  if (isCover) return `<div class="slide-pro">
+    <div class="slide-pro-topbar"><span class="slide-pro-brand">Carousel</span><span class="slide-pro-tag">#topic</span></div>
+    <div class="slide-pro-inner">
+      <div class="slide-pro-num">${n}</div>
+      <div class="slide-pro-center">
+        <div class="slide-pro-title">${title}</div>
+      </div>
+      <div class="slide-pro-footer"><div class="slide-pro-dot"></div><span class="slide-pro-counter">swipe →</span></div>
+    </div>
+  </div>`;
+  if (isCta) return `<div class="slide-pro">
+    <div class="slide-pro-topbar"><span class="slide-pro-brand">Carousel</span><span class="slide-pro-tag">${counter}</span></div>
+    <div class="slide-pro-inner">
+      <div class="slide-pro-num">${n}</div>
+      <div class="slide-pro-center">
+        <div class="slide-pro-title">${title}</div>
+        <div class="slide-pro-cta-line"><div class="slide-pro-text">${body}</div></div>
+      </div>
+      <div class="slide-pro-footer"><div class="slide-pro-dot"></div><span class="slide-pro-counter">${counter}</span></div>
+    </div>
+  </div>`;
+  return `<div class="slide-pro">
+    <div class="slide-pro-topbar"><span class="slide-pro-brand">Carousel</span><span class="slide-pro-tag">${counter}</span></div>
+    <div class="slide-pro-inner">
+      <div class="slide-pro-num">${n}</div>
+      <div class="slide-pro-center">
+        <div class="slide-pro-title">${title}</div>
+        <div class="slide-pro-text">${body}</div>
+      </div>
+      <div class="slide-pro-footer"><div class="slide-pro-dot"></div><span class="slide-pro-counter">${counter}</span></div>
+    </div>
+  </div>`;
+}
+
+function showTemplatePicker() {
+  const overlay = document.getElementById('tplOverlay');
+  const grid = document.getElementById('tplGrid');
+  const isAr = currentLang === 'ar';
+
+  document.getElementById('tplTitle').textContent = isAr ? 'اختر قالباً' : 'Choose a Template';
+  document.getElementById('tplSub').textContent = isAr ? 'اختر تصميماً لكاروسيلك' : 'Pick a design for your carousel';
+
+  const coverSlide = state.carouselSlides[0];
+  const total = state.carouselSlides.length;
+
+  const cardWidth = Math.floor((Math.min(window.innerWidth - 48, 740) - 14) / 2);
+  const scale = (cardWidth / 420).toFixed(3);
+  const innerPx = 420;
+
+  grid.innerHTML = TEMPLATES.map(tpl => {
+    const preview = renderSlideByTemplate(coverSlide, 0, total, tpl.id);
+    return `<div class="tpl-card${state.activeTemplate === tpl.id ? ' tpl-selected' : ''}" data-tpl="${tpl.id}">
+      <div class="tpl-preview" style="height:${cardWidth}px">
+        <div class="tpl-preview-inner" style="width:${innerPx}px;height:${innerPx}px;transform:scale(${scale})">
+          ${preview}
+        </div>
+      </div>
+      <div class="tpl-name">${isAr ? tpl.nameAr : tpl.name}</div>
+    </div>`;
+  }).join('');
+
+  grid.querySelectorAll('.tpl-card').forEach(card => {
+    card.addEventListener('click', () => selectTemplate(card.dataset.tpl));
+  });
+
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function selectTemplate(tplId) {
+  state.activeTemplate = tplId;
+  document.getElementById('tplOverlay').classList.remove('open');
+  showCarousel();
+}
+
+document.getElementById('tplOverlayClose').addEventListener('click', () => {
+  document.getElementById('tplOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+});
+
+// ── Standalone Carousel Creator ──
+let creatorLang = 'en';
+
+document.getElementById('btnOpenCreator').addEventListener('click', openCreator);
+
+document.getElementById('creatorBackBtn').addEventListener('click', () => {
+  showSection('sectionFeed');
+  document.getElementById('detailView').classList.remove('active');
+});
+
+document.getElementById('creatorLangRow').addEventListener('click', (e) => {
+  const btn = e.target.closest('.creator-lang-btn');
+  if (!btn) return;
+  creatorLang = btn.dataset.clang;
+  document.querySelectorAll('.creator-lang-btn').forEach(b => b.classList.toggle('active', b.dataset.clang === creatorLang));
+});
+
+document.getElementById('btnGenerateCreator').addEventListener('click', generateCreatorCarousel);
+
+function openCreator() {
+  document.getElementById('detailView').classList.remove('active');
+  showSection('sectionCreator');
+  creatorLang = currentLang;
+  document.querySelectorAll('.creator-lang-btn').forEach(b => b.classList.toggle('active', b.dataset.clang === creatorLang));
+}
+
+async function generateCreatorCarousel() {
+  const titleVal = document.getElementById('creatorTopicInput').value.trim();
+  const contentVal = document.getElementById('creatorContentInput').value.trim();
+
+  if (!titleVal) { toast(t('creatorEnterTitle')); return; }
+  if (!contentVal) { toast(t('creatorEnterContent')); return; }
+
+  const btn = document.getElementById('btnGenerateCreator');
+  btn.disabled = true;
+  btn.textContent = '...';
+
+  try {
+    const res = await fetch('/api/carousel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: titleVal,
+        summary: contentVal,
+        takeaways: [],
+        source: '',
+        date: '',
+        lang: creatorLang
+      })
+    });
+
+    if (!res.ok) throw new Error('API error');
+    const data = await res.json();
+    if (!data.slides || !data.slides.length) throw new Error('No slides');
+
+    state.carouselTopic = titleVal;
+
+    state.carouselSlides = data.slides.map((slide) => {
+      if (slide.type === 'hook') {
+        return { type: 'cover', slideType: 'hook', title: slide.title, date: '', source: '' };
+      }
+      return { type: 'content', slideType: slide.type, title: slide.title || '', subtitle: slide.body || '' };
+    });
+
+    showTemplatePicker();
+  } catch (err) {
+    console.error('Creator carousel error:', err);
+    toast(t('generateError'));
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = t('creatorGenerate');
+  }
+}
+
+// ── Init ──
+generateBgIcons();
+setTimeout(fetchFeed, 100);
+</script>
+</body>
+</html>
